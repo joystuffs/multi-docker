@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+ - docker build -t maxuel/react-test -f ./client/Dockerfile.dev ./client
+
+
+script:
+  - docker run maxuel/react-test npm test -- --cover
+
+after_success:
+  - docker build -t maxuel/multi-client ./client
+  - docker build -t maxuel/multi-nginx ./nginx
+  - docker build -t maxuel/multi-server ./server
+  - docker build -t maxuel/multi-worker ./worker
+  #log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push maxuel/multi-client
+  - docker push maxuel/multi-nginx
+  - docker push maxuel/multi-server
+  - docker push maxuel/multi-worker
+
